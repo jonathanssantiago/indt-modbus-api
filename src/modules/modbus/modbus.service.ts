@@ -147,21 +147,22 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       try {
         // Tenta ler um registrador para verificar a conexão
         await this.client.readHoldingRegisters(100, 1);
+        this.modbusEvents.emitConnectionStatus(true);
         // Se a leitura foi bem sucedida e o estado anterior era desconectado
         if (!this.isConnected) {
           this.isConnected = true;
-          this.modbusEvents.emitConnectionStatus(true);
           console.log('Modbus connection restored');
         }
       } catch (error) {
         // Se houve erro e o estado anterior era conectado
+        this.modbusEvents.emitConnectionStatus(false);
+
         if (this.isConnected) {
           this.isConnected = false;
-          this.modbusEvents.emitConnectionStatus(false);
           console.log('Modbus connection lost');
         }
       }
-    }, 1000);
+    }, 5000);
   }
 
   async disconnect(): Promise<void> {
