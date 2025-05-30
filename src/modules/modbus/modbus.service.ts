@@ -14,6 +14,7 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
   private client: ModbusRTU;
   private modbusHost: string;
   private modbusPort: number;
+  private readingInterval: number;
   private isConnected: boolean = false;
   private isConnecting: boolean = false;
 
@@ -28,6 +29,10 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       'localhost',
     );
     this.modbusPort = this.configService.get<number>('MODBUS_PORT', 5020);
+    this.readingInterval = this.configService.get<number>(
+      'READING_INTERVAL',
+      5000,
+    );
     this.client = new ModbusRTU();
   }
 
@@ -70,6 +75,8 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
   }
 
   private startReadingLoop() {
+    const readingInterval = this.readingInterval || 5000;
+
     setInterval(async () => {
       if (this.isConnected) {
         try {
@@ -94,7 +101,7 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
           console.error('Error in reading loop:', error);
         }
       }
-    }, 5000);
+    }, readingInterval);
   }
 
   async readRegisters() {

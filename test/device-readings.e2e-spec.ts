@@ -139,7 +139,6 @@ describe('DeviceReadingsController (e2e)', () => {
       expect(res.body).toHaveProperty('host');
       expect(res.body).toHaveProperty('port');
       expect(res.body).toHaveProperty('timestamp');
-      // status pode ser 'connected' ou 'disconnected' dependendo do ambiente
     });
   });
 });
