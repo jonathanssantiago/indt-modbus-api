@@ -2,6 +2,7 @@ version: '3.8'
 
 services:
   api:
+    container_name: iot-monitor-api
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,7 +16,7 @@ services:
       - DB_USERNAME=postgres
       - DB_PASSWORD=postgres
       - DB_DATABASE=modbus_db
-      - MODBUS_HOST=modbus_simulator
+      - MODBUS_HOST=host.docker.internal
       - MODBUS_PORT=5020
       - READING_INTERVAL=5000
     depends_on:
