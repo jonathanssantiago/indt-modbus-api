@@ -36,7 +36,7 @@ describe('DeviceReadingsService', () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
-          envFilePath: '.env.test',
+          isGlobal: true,
         }),
       ],
       providers: [

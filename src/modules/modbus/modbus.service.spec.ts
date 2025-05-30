@@ -471,7 +471,7 @@ describe('ModbusService', () => {
       (global.setInterval as jest.Mock).mockRestore();
     });
 
-    it('should not emit status if connection state unchanged', async () => {
+    it('should emit status even if connection state unchanged', async () => {
       service['isConnected'] = true;
       mockModbusClient.readHoldingRegisters.mockResolvedValue({
         data: [1000],
@@ -487,7 +487,7 @@ describe('ModbusService', () => {
       service['connectionCheckLoop']();
       await intervalCallback();
 
-      expect(modbusEvents.emitConnectionStatus).not.toHaveBeenCalled();
+      expect(modbusEvents.emitConnectionStatus).toHaveBeenCalledWith(true);
 
       (global.setInterval as jest.Mock).mockRestore();
     });
