@@ -9,7 +9,9 @@ import { CreateDeviceReadingDto } from './dto/create-device-reading.dto';
 @Injectable()
 export class DeviceReadingsService {
   private client: any;
-  private isConnected: boolean = false;
+  private modbusHost: string;
+  private modbusPort: number;
+
   private readonly VOLTAGE_ADDRESS = 100;
 
   constructor(
@@ -17,6 +19,11 @@ export class DeviceReadingsService {
     private deviceReadingsRepository: Repository<DeviceReading>,
     private configService: ConfigService,
   ) {
+    this.modbusHost = this.configService.get<string>(
+      'MODBUS_HOST',
+      'localhost',
+    );
+    this.modbusPort = this.configService.get<number>('MODBUS_PORT', 5020);
     this.client = new ModbusRTU();
   }
 
@@ -41,8 +48,8 @@ export class DeviceReadingsService {
   }
 
   async statusModbusService() {
-    const host = this.configService.get('MODBUS_HOST', 'localhost');
-    const port = this.configService.get('MODBUS_PORT', '5020');
+    const host = this.modbusHost;
+    const port = this.modbusPort;
     const timestamp = new Date().toISOString();
     try {
       await this.client.connectTCP(host, { port });

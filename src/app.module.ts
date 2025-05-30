@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSourceOptions } from './config/typeorm.config';
 import { DeviceReadingsModule } from './modules/device-readings/device-readings.module';
 import { HealthModule } from './modules/health/health.module';
+import { ModbusModule } from './modules/modbus/modbus.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { HealthModule } from './modules/health/health.module';
     TypeOrmModule.forRoot(dataSourceOptions),
     HealthModule,
     DeviceReadingsModule,
+    ModbusModule,
   ],
 })
 export class AppModule {}
