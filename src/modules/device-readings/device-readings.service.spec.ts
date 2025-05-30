@@ -3,7 +3,10 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { DeviceReadingsService } from './device-readings.service';
-import { DeviceReading } from './entities/device-reading.entity';
+import {
+  DeviceReading,
+  DeviceReadingType,
+} from './entities/device-reading.entity';
 import { CreateDeviceReadingDto } from './dto/create-device-reading.dto';
 import { DataSource } from 'typeorm';
 import { testDataSourceOptions } from '../../config/typeorm.config.test';
@@ -76,13 +79,13 @@ describe('DeviceReadingsService', () => {
       const mockReadings = [
         {
           id: 1,
-          address: 0,
+          address: DeviceReadingType.VOLTAGE,
           value: 42,
           createdAt: new Date('2025-05-29T10:00:00'),
         },
         {
           id: 2,
-          address: 1,
+          address: DeviceReadingType.CURRENT,
           value: 43,
           createdAt: new Date('2025-05-29T09:00:00'),
         },
@@ -111,7 +114,7 @@ describe('DeviceReadingsService', () => {
     it('should return the latest reading', async () => {
       const mockReading = {
         id: 1,
-        address: 0,
+        address: DeviceReadingType.VOLTAGE,
         value: 42,
         createdAt: new Date('2025-05-29T10:00:00'),
       };
@@ -139,12 +142,13 @@ describe('DeviceReadingsService', () => {
   describe('create', () => {
     it('should create a new reading successfully', async () => {
       const createReadingDto: CreateDeviceReadingDto = {
-        address: 0,
+        address: DeviceReadingType.VOLTAGE,
         value: 42,
       };
       const mockReading = {
         id: 1,
-        ...createReadingDto,
+        address: DeviceReadingType.VOLTAGE,
+        value: 42,
         createdAt: new Date('2025-05-29T10:00:00'),
       };
 
@@ -158,7 +162,7 @@ describe('DeviceReadingsService', () => {
 
     it('should handle errors when creating a reading', async () => {
       const createReadingDto: CreateDeviceReadingDto = {
-        address: 0,
+        address: DeviceReadingType.CURRENT,
         value: 42,
       };
       jest

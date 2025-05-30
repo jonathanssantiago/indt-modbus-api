@@ -1,28 +1,31 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { DeviceReading } from '../entities/device-reading.entity';
+import {
+  DeviceReading,
+  DeviceReadingType,
+} from '../entities/device-reading.entity';
 
 export class DeviceReadingPresenter {
   @ApiProperty({
     description: 'The unique identifier of the device reading',
-    example: 1
+    example: 1,
   })
   id: number;
 
   @ApiProperty({
-    description: 'The Modbus address of the device',
-    example: 40001
+    enum: DeviceReadingType,
+    description: 'Endereço da leitura: VOLTAGE, CURRENT ou TEMPERATURE',
   })
-  address: number;
+  address: DeviceReadingType;
 
   @ApiProperty({
     description: 'The value read from the device',
-    example: 23.5
+    example: 23.5,
   })
   value: number;
 
   @ApiProperty({
     description: 'The timestamp when the reading was taken',
-    example: '2024-03-10T15:30:00.000Z'
+    example: '2024-03-10T15:30:00.000Z',
   })
   createdAt: Date;
 
@@ -37,7 +40,9 @@ export class DeviceReadingPresenter {
     return new DeviceReadingPresenter(deviceReading);
   }
 
-  static toPresenterArray(deviceReadings: DeviceReading[]): DeviceReadingPresenter[] {
-    return deviceReadings.map(reading => new DeviceReadingPresenter(reading));
+  static toPresenterArray(
+    deviceReadings: DeviceReading[],
+  ): DeviceReadingPresenter[] {
+    return deviceReadings.map((reading) => new DeviceReadingPresenter(reading));
   }
-} 
+}

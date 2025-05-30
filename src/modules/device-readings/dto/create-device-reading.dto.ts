@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber } from 'class-validator';
+import { IsEnum, IsNumber } from 'class-validator';
+import { DeviceReadingType } from '../entities/device-reading.entity';
 
 export class CreateDeviceReadingDto {
   @ApiProperty({
-    description: 'The Modbus device address',
+    enum: DeviceReadingType,
   })
-  @IsNumber()
-  address: number;
+  @IsEnum(DeviceReadingType)
+  address: DeviceReadingType;
 
   @ApiProperty({
     description: 'The reading value',

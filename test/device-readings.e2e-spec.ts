@@ -2,7 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DeviceReading } from '@/modules/device-readings/entities/device-reading.entity';
+import {
+  DeviceReading,
+  DeviceReadingType,
+} from '@/modules/device-readings/entities/device-reading.entity';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { DeviceReadingsModule } from '@/modules/device-readings/device-readings.module';
@@ -50,7 +53,7 @@ describe('DeviceReadingsController (e2e)', () => {
 
     it('should return an array of readings', async () => {
       const reading = await repository.save({
-        address: 1,
+        address: DeviceReadingType.VOLTAGE,
         value: 23.5,
       });
 
@@ -77,7 +80,10 @@ describe('DeviceReadingsController (e2e)', () => {
     });
 
     it('should return the latest reading', async () => {
-      const reading = await repository.save({ address: 2, value: 99.9 });
+      const reading = await repository.save({
+        address: DeviceReadingType.TEMPERATURE,
+        value: 99.9,
+      });
       return request(app.getHttpServer())
         .get('/device-readings/last-reading')
         .expect(200)
@@ -93,15 +99,15 @@ describe('DeviceReadingsController (e2e)', () => {
   describe('/device-readings/history (GET) - múltiplos', () => {
     it('should return all readings in history in order of createdAt DESC', async () => {
       const now = new Date();
-      const reading1 = await repository.save({
-        address: 1,
-        value: 10,
-        createdAt: new Date(now.getTime() - 1000),
-      });
       const reading2 = await repository.save({
-        address: 2,
+        address: DeviceReadingType.TEMPERATURE,
         value: 20,
         createdAt: now,
+      });
+      const reading1 = await repository.save({
+        address: DeviceReadingType.CURRENT,
+        value: 10,
+        createdAt: new Date(now.getTime() - 1000),
       });
       // O controller retorna do mais recente para o mais antigo
       return request(app.getHttpServer())

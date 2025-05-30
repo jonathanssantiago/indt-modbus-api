@@ -2,12 +2,15 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import ModbusRTU from 'modbus-serial';
-import { DeviceReading } from '../device-readings/entities/device-reading.entity';
+import {
+  DeviceReading,
+  DeviceReadingType,
+} from '../device-readings/entities/device-reading.entity';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ModbusService implements OnModuleInit, OnModuleDestroy {
-  private client: any;
+  private client: ModbusRTU;
   private modbusHost: string;
   private modbusPort: number;
 
@@ -15,9 +18,9 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
   private isConnecting: boolean = false;
 
   // Endereços dos registradores Modbus
-  private readonly VOLTAGE_ADDRESS = 100;
-  private readonly CURRENT_ADDRESS = 101;
-  private readonly TEMPERATURE_ADDRESS = 102;
+  private readonly VOLTAGE_ADDRESS = DeviceReadingType.VOLTAGE;
+  private readonly CURRENT_ADDRESS = DeviceReadingType.CURRENT;
+  private readonly TEMPERATURE_ADDRESS = DeviceReadingType.TEMPERATURE;
 
   constructor(
     private configService: ConfigService,
@@ -35,7 +38,7 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     await this.connect();
     this.startReconnectLoop();
-    this.startConnectionCheck();
+    this.startReadingLoop();
   }
 
   onModuleDestroy() {
@@ -58,31 +61,81 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private startReconnectLoop() {
+  private async startReconnectLoop() {
+    if (!this.isConnected) {
+      console.log('Attempting to reconnect to Modbus simulator...');
+      await this.connect();
+    }
+  }
+
+  private startReadingLoop() {
     setInterval(async () => {
-      if (!this.isConnected) {
-        console.log('Attempting to reconnect to Modbus simulator...');
-        await this.connect();
+      if (this.isConnected) {
+        this.isConnected = true;
+        try {
+          const readings = await this.readRegisters();
+          const timestamp = new Date();
+
+          // Salvar leituras no banco de dados
+          await Promise.all([
+            this.deviceReadingRepository.save({
+              address: this.VOLTAGE_ADDRESS,
+              value: readings.voltage,
+              timestamp,
+              type: 'voltage',
+            }),
+            this.deviceReadingRepository.save({
+              address: this.CURRENT_ADDRESS,
+              value: readings.current,
+              createdAt: timestamp,
+              type: 'current',
+            }),
+            this.deviceReadingRepository.save({
+              address: this.TEMPERATURE_ADDRESS,
+              value: readings.temperature,
+              createdAt: timestamp,
+              type: 'temperature',
+            }),
+          ]);
+        } catch (error) {
+          console.error('Error in reading loop:', error);
+        }
+      } else {
+        this.isConnected = false;
+        this.startReconnectLoop();
       }
     }, 5000);
   }
 
-  private startConnectionCheck() {
-    setInterval(async () => {
-      try {
-        // Tenta ler um registrador para verificar a conexão
-        await this.client.readHoldingRegisters(this.VOLTAGE_ADDRESS, 1);
-        if (!this.isConnected) {
-          this.isConnected = true;
-          console.log('Modbus connection restored');
-        }
-      } catch (error) {
-        if (this.isConnected) {
-          this.isConnected = false;
-          console.log('Modbus connection lost');
-        }
-      }
-    }, 1000);
+  async readRegisters() {
+    if (!this.isConnected) {
+      throw new Error('Not connected to Modbus server');
+    }
+
+    try {
+      const result = await this.client.readHoldingRegisters(100, 3);
+
+      console.log('Raw registers:', result.data);
+
+      const voltage = result.data[0];
+      const current = result.data[1];
+      const temperature = result.data[2];
+
+      console.log('Converted values:', {
+        voltage,
+        current,
+        temperature,
+      });
+
+      return {
+        voltage: voltage,
+        current: current,
+        temperature: temperature,
+      };
+    } catch (error) {
+      console.error('Error reading Modbus registers:', error);
+      throw error;
+    }
   }
 
   async disconnect(): Promise<void> {

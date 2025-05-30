@@ -7,4 +7,4 @@ export const testDataSourceOptions: DataSourceOptions = {
   entities: [DeviceReading],
   synchronize: true,
   logging: false,
-}; 
+};

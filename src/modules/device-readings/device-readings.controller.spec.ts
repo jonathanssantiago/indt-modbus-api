@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DeviceReadingsController } from './device-readings.controller';
 import { DeviceReadingsService } from './device-readings.service';
-import { DeviceReading } from './entities/device-reading.entity';
+import {
+  DeviceReading,
+  DeviceReadingType,
+} from './entities/device-reading.entity';
 
 describe('DeviceReadingsController', () => {
   let controller: DeviceReadingsController;
@@ -34,7 +37,7 @@ describe('DeviceReadingsController', () => {
     it('should return the latest reading when available', async () => {
       const mockReading: DeviceReading = {
         id: 1,
-        address: 0,
+        address: DeviceReadingType.VOLTAGE,
         value: 42,
         createdAt: new Date('2025-05-29T10:00:00'),
       };
@@ -45,7 +48,7 @@ describe('DeviceReadingsController', () => {
 
       expect(result).toBeDefined();
       expect(result.id).toBe(1);
-      expect(result.address).toBe(0);
+      expect(result.address).toBe(DeviceReadingType.VOLTAGE);
       expect(result.value).toBe(42);
       expect(service.findLatest).toHaveBeenCalled();
     });
@@ -65,13 +68,13 @@ describe('DeviceReadingsController', () => {
       const mockReadings: DeviceReading[] = [
         {
           id: 1,
-          address: 0,
+          address: DeviceReadingType.VOLTAGE,
           value: 42,
           createdAt: new Date('2025-05-29T10:00:00'),
         },
         {
           id: 2,
-          address: 1,
+          address: DeviceReadingType.CURRENT,
           value: 43,
           createdAt: new Date('2025-05-29T09:00:00'),
         },

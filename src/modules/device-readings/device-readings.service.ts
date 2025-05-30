@@ -12,8 +12,6 @@ export class DeviceReadingsService {
   private modbusHost: string;
   private modbusPort: number;
 
-  private readonly VOLTAGE_ADDRESS = 100;
-
   constructor(
     @InjectRepository(DeviceReading)
     private deviceReadingsRepository: Repository<DeviceReading>,
@@ -54,10 +52,7 @@ export class DeviceReadingsService {
     try {
       await this.client.connectTCP(host, { port });
       this.client.setID(0);
-      const result = await this.client.readHoldingRegisters(
-        this.VOLTAGE_ADDRESS,
-        1,
-      );
+      const result = await this.client.readHoldingRegisters(100, 1);
 
       if (result && result.data) {
         return {

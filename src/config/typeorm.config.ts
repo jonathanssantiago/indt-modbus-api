@@ -1,7 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
-import { DeviceReading } from '@/modules/device-readings/entities/device-reading.entity';
+import { join } from 'path';
 
 config();
 
@@ -14,12 +14,11 @@ export const dataSourceOptions: DataSourceOptions = {
   username: configService.get('DB_USERNAME', 'postgres'),
   password: configService.get('DB_PASSWORD', 'postgres'),
   database: configService.get('DB_DATABASE', 'modbus_db'),
-  entities: [DeviceReading],
-  migrations: ['dist/database/migrations/*.js'],
-  synchronize: configService.get('NODE_ENV', 'development') === 'development',
+  entities: [join(__dirname, '..', '**', 'entities', '*.entity.{ts,js}')],
+  migrations: [join(__dirname, '..', 'database', 'migrations', '*.{ts,js}')],
+  synchronize: false,
   logging: configService.get('NODE_ENV', 'development') === 'development',
 };
 
 const dataSource = new DataSource(dataSourceOptions);
-export default dataSource; 
- 
+export default dataSource;

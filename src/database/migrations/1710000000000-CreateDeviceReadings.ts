@@ -1,52 +1,55 @@
-import { MigrationInterface, QueryRunner, Table } from 'typeorm';
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
 export class CreateDeviceReadings1710000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.createTable(
-      new Table({
-        name: 'device_readings',
-        columns: [
-          {
-            name: 'id',
-            type: 'integer',
-            isPrimary: true,
-            isGenerated: true,
-            generationStrategy: 'increment',
-          },
-          {
-            name: 'address',
-            type: 'integer',
-          },
-          {
-            name: 'value',
-            type: 'float',
-            precision: 10,
-            scale: 2,
-          },
-          {
-            name: 'created_at',
-            type: 'timestamp',
-            default: 'CURRENT_TIMESTAMP',
-          },
-        ],
-      }),
-      true,
-    );
+    // Verificar se é PostgreSQL para usar enum
+    const isPostgres = queryRunner.connection.options.type === 'postgres';
 
-    // Criar índice para melhorar performance de consultas por endereço
-    await queryRunner.query(
-      'CREATE INDEX idx_device_readings_address ON device_readings(address)',
-    );
+    if (isPostgres) {
+      // Criar o tipo enum no PostgreSQL
+      await queryRunner.query(`
+        CREATE TYPE "device_reading_type_enum" AS ENUM('VOLTAGE', 'CURRENT', 'TEMPERATURE')
+      `);
 
-    // Criar índice para melhorar performance de consultas por data
-    await queryRunner.query(
-      'CREATE INDEX idx_device_readings_created_at ON device_readings(created_at)',
-    );
+      // Criar a tabela com enum
+      await queryRunner.query(`
+        CREATE TABLE "device_readings" (
+          "id" SERIAL NOT NULL,
+          "address" "device_reading_type_enum" NOT NULL,
+          "value" NUMERIC(10,2) NOT NULL,
+          "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT "PK_device_readings" PRIMARY KEY ("id")
+        )
+      `);
+    } else {
+      // Para outros bancos (SQLite), usar varchar
+      await queryRunner.query(`
+        CREATE TABLE "device_readings" (
+          "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+          "address" VARCHAR(20) NOT NULL CHECK ("address" IN ('VOLTAGE', 'CURRENT', 'TEMPERATURE')),
+          "value" DECIMAL(10,2) NOT NULL,
+          "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+    }
+
+    // Criar índices
+    await queryRunner.query(`
+      CREATE INDEX "idx_device_readings_address" ON "device_readings" ("address")
+    `);
+
+    await queryRunner.query(`
+      CREATE INDEX "idx_device_readings_created_at" ON "device_readings" ("created_at")
+    `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    await queryRunner.dropIndex('device_readings', 'idx_device_readings_created_at');
-    await queryRunner.dropIndex('device_readings', 'idx_device_readings_address');
-    await queryRunner.dropTable('device_readings');
+    await queryRunner.query(`DROP TABLE "device_readings"`);
+
+    // Só dropar o enum se for PostgreSQL
+    const isPostgres = queryRunner.connection.options.type === 'postgres';
+    if (isPostgres) {
+      await queryRunner.query(`DROP TYPE "device_reading_type_enum"`);
+    }
   }
-} 
+}
