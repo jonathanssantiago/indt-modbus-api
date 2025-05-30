@@ -35,6 +35,7 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
     await this.connect();
     this.startReconnectLoop();
     this.startReadingLoop();
+    this.connectionCheckLoop();
   }
 
   onModuleDestroy() {
@@ -60,10 +61,12 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
   }
 
   private async startReconnectLoop() {
-    if (!this.isConnected) {
-      console.log('Attempting to reconnect to Modbus simulator...');
-      await this.connect();
-    }
+    setInterval(async () => {
+      if (!this.isConnected) {
+        console.log('Attempting to reconnect to Modbus simulator...');
+        await this.connect();
+      }
+    }, 1000);
   }
 
   private startReadingLoop() {
@@ -123,6 +126,28 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
       console.error('Error reading Modbus registers:', error);
       throw error;
     }
+  }
+
+  private connectionCheckLoop() {
+    setInterval(async () => {
+      try {
+        // Tenta ler um registrador para verificar a conexão
+        await this.client.readHoldingRegisters(100, 1);
+        // Se a leitura foi bem sucedida e o estado anterior era desconectado
+        if (!this.isConnected) {
+          this.isConnected = true;
+          this.modbusEvents.emitConnectionStatus(true);
+          console.log('Modbus connection restored');
+        }
+      } catch (error) {
+        // Se houve erro e o estado anterior era conectado
+        if (this.isConnected) {
+          this.isConnected = false;
+          this.modbusEvents.emitConnectionStatus(false);
+          console.log('Modbus connection lost');
+        }
+      }
+    }, 1000);
   }
 
   async disconnect(): Promise<void> {
