@@ -1,22 +1,29 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { INestApplication } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { testDataSourceOptions } from '@/config/typeorm.config.test';
 
 describe('AppController', () => {
-  let appController: AppController;
+  let app: INestApplication;
 
-  beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
+  beforeAll(async () => {
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [
+        TypeOrmModule.forRoot(testDataSourceOptions),
+      ],
     }).compile();
 
-    appController = app.get<AppController>(AppController);
+    app = moduleFixture.createNestApplication();
+    await app.init();
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
-    });
+  afterAll(async () => {
+    if (app) {
+      await app.close();
+    }
+  });
+
+  it('should be defined', () => {
+    expect(app).toBeDefined();
   });
 });

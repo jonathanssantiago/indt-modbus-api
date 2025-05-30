@@ -1,10 +1,19 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { dataSourceOptions } from './config/typeorm.config';
+import { DeviceReadingsModule } from './modules/device-readings/device-readings.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
-  imports: [],
-  controllers: [AppController],
-  providers: [AppService],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    TypeOrmModule.forRoot(dataSourceOptions),
+    HealthModule,
+    DeviceReadingsModule,
+  ],
 })
 export class AppModule {}
