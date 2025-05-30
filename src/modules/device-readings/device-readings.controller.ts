@@ -1,14 +1,8 @@
-import {
-  Controller,
-  Get,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { Controller, Get } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { DeviceReadingsService } from './device-readings.service';
 import { DeviceReadingPresenter } from './presenters/device-reading.presenter';
+import { ModbusStatusPresenter } from './presenters/modbus-status.presenter';
 
 @ApiTags('device-readings')
 @Controller('device-readings')
@@ -20,7 +14,7 @@ export class DeviceReadingsController {
   @ApiResponse({
     status: 200,
     description: 'Última leitura retornada com sucesso.',
-    type: DeviceReadingPresenter
+    type: DeviceReadingPresenter,
   })
   async getLastReading(): Promise<DeviceReadingPresenter | null> {
     const reading = await this.deviceReadingsService.findLatest();
@@ -32,7 +26,7 @@ export class DeviceReadingsController {
   @ApiResponse({
     status: 200,
     description: 'Histórico de leituras retornado com sucesso.',
-    type: [DeviceReadingPresenter]
+    type: [DeviceReadingPresenter],
   })
   async getHistory(): Promise<DeviceReadingPresenter[]> {
     const readings = await this.deviceReadingsService.findAll();
@@ -40,13 +34,23 @@ export class DeviceReadingsController {
   }
 
   @Get('status')
-  @ApiOperation({ summary: 'Obter status da conexão' })
+  @ApiOperation({
+    summary: 'Obter status da conexão',
+    description:
+      'Retorna o status atual da conexão Modbus, incluindo informações sobre a conectividade do dispositivo',
+  })
   @ApiResponse({
     status: 200,
     description: 'Status da conexão retornado com sucesso.',
-    type: 'object'
+    type: ModbusStatusPresenter,
   })
-  getStatus(): { status: string } {
-    return { status: 'ok' };
+  @ApiResponse({
+    status: 503,
+    description: 'Serviço Modbus indisponível',
+  })
+  async getStatus(): Promise<ModbusStatusPresenter> {
+    const statusService =
+      await this.deviceReadingsService.statusModbusService();
+    return statusService;
   }
-} 
+}

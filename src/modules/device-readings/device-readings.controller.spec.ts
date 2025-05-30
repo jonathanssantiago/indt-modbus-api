@@ -7,17 +7,17 @@ describe('DeviceReadingsController', () => {
   let controller: DeviceReadingsController;
   let service: DeviceReadingsService;
 
-  const mockDeviceReadingsService = {
-    findAll: jest.fn(),
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DeviceReadingsController],
       providers: [
         {
           provide: DeviceReadingsService,
-          useValue: mockDeviceReadingsService,
+          useValue: {
+            findAll: jest.fn(),
+            findLatest: jest.fn(),
+            statusModbusService: jest.fn(),
+          },
         },
       ],
     }).compile();
@@ -30,12 +30,107 @@ describe('DeviceReadingsController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('findAll', () => {
-    it('should return an array of device readings', async () => {
-      const result = [new DeviceReading()];
-      jest.spyOn(service, 'findAll').mockResolvedValue(result);
+  describe('getLastReading', () => {
+    it('should return the latest reading when available', async () => {
+      const mockReading: DeviceReading = {
+        id: 1,
+        address: 0,
+        value: 42,
+        createdAt: new Date('2025-05-29T10:00:00'),
+      };
 
-      expect(await controller.findAll()).toBe(result);
+      jest.spyOn(service, 'findLatest').mockResolvedValue(mockReading);
+
+      const result = await controller.getLastReading();
+
+      expect(result).toBeDefined();
+      expect(result.id).toBe(1);
+      expect(result.address).toBe(0);
+      expect(result.value).toBe(42);
+      expect(service.findLatest).toHaveBeenCalled();
+    });
+
+    it('should return null when no reading is available', async () => {
+      jest.spyOn(service, 'findLatest').mockResolvedValue(null);
+
+      const result = await controller.getLastReading();
+
+      expect(result).toBeNull();
+      expect(service.findLatest).toHaveBeenCalled();
     });
   });
-}); 
+
+  describe('getHistory', () => {
+    it('should return array of readings', async () => {
+      const mockReadings: DeviceReading[] = [
+        {
+          id: 1,
+          address: 0,
+          value: 42,
+          createdAt: new Date('2025-05-29T10:00:00'),
+        },
+        {
+          id: 2,
+          address: 1,
+          value: 43,
+          createdAt: new Date('2025-05-29T09:00:00'),
+        },
+      ];
+
+      jest.spyOn(service, 'findAll').mockResolvedValue(mockReadings);
+
+      const result = await controller.getHistory();
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe(1);
+      expect(result[1].id).toBe(2);
+      expect(service.findAll).toHaveBeenCalled();
+    });
+
+    it('should return empty array when no readings exist', async () => {
+      jest.spyOn(service, 'findAll').mockResolvedValue([]);
+
+      const result = await controller.getHistory();
+
+      expect(result).toHaveLength(0);
+      expect(service.findAll).toHaveBeenCalled();
+    });
+  });
+
+  describe('getStatus', () => {
+    it('should return connected status when service is working', async () => {
+      const mockStatus = {
+        status: 'connected',
+        host: 'localhost',
+        port: 5020,
+        timestamp: '2025-05-29T10:00:00.000Z',
+        message: 'Modbus simulator is connected',
+      };
+
+      jest.spyOn(service, 'statusModbusService').mockResolvedValue(mockStatus);
+
+      const result = await controller.getStatus();
+
+      expect(result).toEqual(mockStatus);
+      expect(service.statusModbusService).toHaveBeenCalled();
+    });
+
+    it('should return error status when service is not available', async () => {
+      const mockStatus = {
+        status: 'disconnected',
+        host: 'localhost',
+        port: 5020,
+        timestamp: '2025-05-29T10:00:00.000Z',
+        error: 'Failed to connect to Modbus simulator',
+        details: 'Connection failed',
+      };
+
+      jest.spyOn(service, 'statusModbusService').mockResolvedValue(mockStatus);
+
+      const result = await controller.getStatus();
+
+      expect(result).toEqual(mockStatus);
+      expect(service.statusModbusService).toHaveBeenCalled();
+    });
+  });
+});

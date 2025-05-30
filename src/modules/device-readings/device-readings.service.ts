@@ -1,31 +1,85 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { ConfigService } from '@nestjs/config';
+import ModbusRTU from 'modbus-serial';
 import { DeviceReading } from './entities/device-reading.entity';
 import { CreateDeviceReadingDto } from './dto/create-device-reading.dto';
 
 @Injectable()
 export class DeviceReadingsService {
-    constructor(
-        @InjectRepository(DeviceReading)
-        private deviceReadingsRepository: Repository<DeviceReading>,
-    ) {}
+  private client: any;
+  private isConnected: boolean = false;
+  private readonly VOLTAGE_ADDRESS = 100;
 
-    async create(createDeviceReadingDto: CreateDeviceReadingDto): Promise<DeviceReading> {
-        return this.deviceReadingsRepository.save(createDeviceReadingDto);
-    }
+  constructor(
+    @InjectRepository(DeviceReading)
+    private deviceReadingsRepository: Repository<DeviceReading>,
+    private configService: ConfigService,
+  ) {
+    this.client = new ModbusRTU();
+  }
 
-    async findAll(): Promise<DeviceReading[]> {
-        return await this.deviceReadingsRepository.find({
-            order: { createdAt: 'DESC' }
-        });
-    }
+  async create(
+    createDeviceReadingDto: CreateDeviceReadingDto,
+  ): Promise<DeviceReading> {
+    return this.deviceReadingsRepository.save(createDeviceReadingDto);
+  }
 
-    async findLatest(): Promise<DeviceReading | null> {
-        const readings = await this.deviceReadingsRepository.find({
-            order: { createdAt: 'DESC' },
-            take: 1
-        });
-        return readings.length > 0 ? readings[0] : null;
+  async findAll(): Promise<DeviceReading[]> {
+    return await this.deviceReadingsRepository.find({
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findLatest(): Promise<DeviceReading | null> {
+    const readings = await this.deviceReadingsRepository.find({
+      order: { createdAt: 'DESC' },
+      take: 1,
+    });
+    return readings.length > 0 ? readings[0] : null;
+  }
+
+  async statusModbusService() {
+    const host = this.configService.get('MODBUS_HOST', 'localhost');
+    const port = this.configService.get('MODBUS_PORT', '5020');
+    const timestamp = new Date().toISOString();
+    try {
+      await this.client.connectTCP(host, { port });
+      this.client.setID(0);
+      const result = await this.client.readHoldingRegisters(
+        this.VOLTAGE_ADDRESS,
+        1,
+      );
+
+      if (result && result.data) {
+        return {
+          status: 'connected',
+          host,
+          port,
+          timestamp,
+          message: 'Modbus simulator is connected',
+        };
+      }
+
+      return {
+        status: 'disconnected',
+        host,
+        port,
+        timestamp,
+        error: 'No data received from Modbus simulator',
+      };
+    } catch (err) {
+      const error = err instanceof Error ? err.message : String(err);
+      console.error('Failed to connect to Modbus simulator:', err);
+      return {
+        status: 'disconnected',
+        host,
+        port,
+        timestamp,
+        error: 'Failed to connect to Modbus simulator',
+        details: error,
+      };
     }
+  }
 }

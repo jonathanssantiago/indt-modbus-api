@@ -40,10 +40,10 @@ describe('DeviceReadingsController (e2e)', () => {
     }
   });
 
-  describe('/device-readings (GET)', () => {
+  describe('/device-readings/history (GET)', () => {
     it('should return an empty array of readings', () => {
       return request(app.getHttpServer())
-        .get('/device-readings')
+        .get('/device-readings/history')
         .expect(200)
         .expect([]);
     });
@@ -55,7 +55,7 @@ describe('DeviceReadingsController (e2e)', () => {
       });
 
       return request(app.getHttpServer())
-        .get('/device-readings')
+        .get('/device-readings/history')
         .expect(200)
         .expect([
           {
@@ -67,4 +67,73 @@ describe('DeviceReadingsController (e2e)', () => {
         ]);
     });
   });
-}); 
+
+  describe('/device-readings/last-reading (GET)', () => {
+    it('should return empty object when there is no reading', () => {
+      return request(app.getHttpServer())
+        .get('/device-readings/last-reading')
+        .expect(200)
+        .expect({});
+    });
+
+    it('should return the latest reading', async () => {
+      const reading = await repository.save({ address: 2, value: 99.9 });
+      return request(app.getHttpServer())
+        .get('/device-readings/last-reading')
+        .expect(200)
+        .expect({
+          id: reading.id,
+          address: reading.address,
+          value: reading.value,
+          createdAt: reading.createdAt.toISOString(),
+        });
+    });
+  });
+
+  describe('/device-readings/history (GET) - múltiplos', () => {
+    it('should return all readings in history in order of createdAt DESC', async () => {
+      const now = new Date();
+      const reading1 = await repository.save({
+        address: 1,
+        value: 10,
+        createdAt: new Date(now.getTime() - 1000),
+      });
+      const reading2 = await repository.save({
+        address: 2,
+        value: 20,
+        createdAt: now,
+      });
+      // O controller retorna do mais recente para o mais antigo
+      return request(app.getHttpServer())
+        .get('/device-readings/history')
+        .expect(200)
+        .expect([
+          {
+            id: reading2.id,
+            address: reading2.address,
+            value: reading2.value,
+            createdAt: reading2.createdAt.toISOString(),
+          },
+          {
+            id: reading1.id,
+            address: reading1.address,
+            value: reading1.value,
+            createdAt: reading1.createdAt.toISOString(),
+          },
+        ]);
+    });
+  });
+
+  describe('/device-readings/status (GET)', () => {
+    it('should return status of modbus connection', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/device-readings/status')
+        .expect(200);
+      expect(res.body).toHaveProperty('status');
+      expect(res.body).toHaveProperty('host');
+      expect(res.body).toHaveProperty('port');
+      expect(res.body).toHaveProperty('timestamp');
+      // status pode ser 'connected' ou 'disconnected' dependendo do ambiente
+    });
+  });
+});
