@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber,} from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class ReadingDto {
   @ApiProperty({
@@ -28,4 +28,4 @@ export class ReadingDto {
     example: '2024-03-10T15:30:00Z',
   })
   createdAt: Date;
-} 
+}

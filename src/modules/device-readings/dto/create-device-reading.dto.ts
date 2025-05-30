@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsString, IsOptional, Min, Max } from 'class-validator';
+import { IsNumber } from 'class-validator';
 
 export class CreateDeviceReadingDto {
   @ApiProperty({
@@ -14,4 +14,4 @@ export class CreateDeviceReadingDto {
   })
   @IsNumber()
   value: number;
-} 
+}
