@@ -10,7 +10,7 @@ import { ModbusModule } from './modules/modbus/modbus.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: [`.env.${process.env.NODE_ENV || 'development'}`, '.env'],
     }),
     TypeOrmModule.forRoot(dataSourceOptions),
     HealthModule,

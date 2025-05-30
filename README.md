@@ -110,17 +110,27 @@ npm install
 
 ### 2. Configure as variáveis de ambiente
 
-#### Variáveis de ambiente para Local
+O projeto utiliza três arquivos de ambiente:
+
+- **`.env.development`** - Para desenvolvimento local
+- **`.env.production`** - Para produção e Docker
+- **`.env.test`** - Para execução de testes
+
+#### Para desenvolvimento local:
 
 ```bash
-cp .env.local.example .env
+# O arquivo .env.development já está configurado para desenvolvimento local
+# Você pode editá-lo se necessário para ajustar configurações específicas
 ```
 
-#### Variáveis de ambiente para o Docker
+#### Para produção/Docker:
 
 ```bash
-cp .env.docker .env
+# O arquivo .env.production já está configurado para Docker
+# Edite as configurações se necessário para seu ambiente específico
 ```
+
+**Importante**: Os arquivos de ambiente já estão pré-configurados. A aplicação carregará automaticamente o arquivo correto baseado na variável `NODE_ENV`.
 
 ### 4. Execute as migrações do banco (necessário somente no ambiente sem o docker)
 
@@ -143,26 +153,48 @@ npm run seed:run
 ### Modo desenvolvimento
 
 ```bash
+# Carrega automaticamente .env.development
 yarn run start:dev
 # ou
 npm run start:dev
 ```
 
+### Modo produção (local)
+
+```bash
+# Build da aplicação
+yarn run build
+# ou
+npm run build
+
+# Executa em produção (carrega .env.production)
+yarn run start:prod
+# ou
+npm run start:prod
+```
+
 ### Com Docker
 
 ```bash
-# Executar todos os serviços
+# Executar todos os serviços (usa .env.production automaticamente)
 docker-compose up -d
 
 # Ver logs
 docker-compose logs -f api
 ```
 
+### Variáveis de ambiente por modo
+
+- **Desenvolvimento**: `NODE_ENV=development` → carrega `.env.development`
+- **Produção**: `NODE_ENV=production` → carrega `.env.production`
+- **Teste**: `NODE_ENV=test` → carrega `.env.test`
+
 ## 🧪 Testes
 
 ### Testes unitários
 
 ```bash
+# Carrega automaticamente .env.test
 yarn run test
 # ou
 npm run test
@@ -171,9 +203,18 @@ npm run test
 ### Testes de integração (E2E)
 
 ```bash
+# Carrega automaticamente .env.test
 yarn run test:e2e
 # ou
 npm run test:e2e
+```
+
+### Testes com watch mode
+
+```bash
+yarn run test:watch
+# ou
+npm run test:watch
 ```
 
 ### Resultados dos Testes
@@ -222,9 +263,13 @@ http://localhost:3003/api/docs
 
 ### Problemas comuns
 
-#### Erro de variaveis de ambiente
+#### Erro de variáveis de ambiente
 
-Verifique seu .env de acordo com o ambiente (local ou com docker)
+Verifique se você está usando o ambiente correto:
+
+- **Desenvolvimento**: `.env.development` (banco local)
+- **Produção/Docker**: `.env.production` (banco no container)
+- **Testes**: `.env.test` (SQLite em memória)
 
 #### Erro de banco de dados
 
@@ -235,3 +280,28 @@ docker-compose exec db psql -U postgres -d modbus_db
 # Executar migrações
 yarn run migration:run
 ```
+
+## ⚙️ Configuração de Ambientes
+
+### Estrutura dos arquivos de ambiente
+
+```
+.env.development    # Desenvolvimento local
+.env.production     # Produção e Docker
+.env.test          # Testes automatizados
+```
+
+### Variáveis principais
+
+| Variável      | Desenvolvimento | Produção           | Teste       |
+| ------------- | --------------- | ------------------ | ----------- |
+| `NODE_ENV`    | `development`   | `production`       | `test`      |
+| `DB_HOST`     | `localhost`     | `db`               | -           |
+| `MODBUS_HOST` | `localhost`     | `modbus_simulator` | `localhost` |
+| `PORT`        | `3003`          | `3003`             | `3333`      |
+
+### Como a aplicação carrega os ambientes
+
+1. A aplicação lê a variável `NODE_ENV`
+2. Carrega o arquivo `.env.{NODE_ENV}`
+3. Fallback para `.env` se o arquivo específico não existir

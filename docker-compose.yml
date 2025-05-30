@@ -6,26 +6,24 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - '${PORT:-3003}:${PORT:-3003}'
-    env_file:
-      - .env.docker
+      - '3003:3003'
     environment:
-      - NODE_ENV=${NODE_ENV:-production}
-      - PORT=${PORT:-3003}
-      - DB_HOST=${DB_HOST:-db}
-      - DB_PORT=${DB_PORT:-5432}
-      - DB_USERNAME=${DB_USERNAME:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_DATABASE=${DB_DATABASE:-modbus_db}
-      - MODBUS_HOST=${MODBUS_HOST:-modbus_simulator}
-      - MODBUS_PORT=${MODBUS_PORT:-5020}
-      - READING_INTERVAL=${READING_INTERVAL:-5000}
+      - NODE_ENV=production
+      - PORT=3003
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=modbus_db
+      - MODBUS_HOST=modbus_simulator
+      - MODBUS_PORT=5020
+      - READING_INTERVAL=5000
     depends_on:
       - db
     networks:
       - modbus-network
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:${PORT:-3003}/health']
+      test: ['CMD', 'curl', '-f', 'http://localhost:${PORT}/health']
       interval: 30s
       timeout: 5s
       retries: 3
@@ -34,19 +32,17 @@ services:
   db:
     image: postgres:16-alpine
     ports:
-      - '${DB_PORT:-5432}:5432'
-    env_file:
-      - .env.docker
+      - '5432:5432'
     environment:
-      - POSTGRES_USER=${DB_USERNAME:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_DATABASE:-modbus_db}
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=modbus_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - modbus-network
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME:-postgres}']
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USERNAME}']
       interval: 10s
       timeout: 5s
       retries: 5
