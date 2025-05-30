@@ -97,6 +97,13 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
               value: readings.temperature,
             }),
           ]);
+
+          this.modbusEvents.emitNewReading({
+            voltage: readings.voltage,
+            current: readings.current,
+            temperature: readings.temperature,
+            timestamp: new Date(),
+          });
         } catch (error) {
           console.error('Error in reading loop:', error);
         }
