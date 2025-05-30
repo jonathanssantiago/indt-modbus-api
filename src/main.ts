@@ -6,7 +6,6 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   
-  // Enable validation
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
     whitelist: true,
@@ -21,7 +20,6 @@ async function bootstrap() {
     .setTitle('INDT Modbus API')
     .setDescription('API for Modbus communication and device readings')
     .setVersion('1.0')
-    .addTag('device-readings')
     .build();
   
   const document = SwaggerModule.createDocument(app, config);
