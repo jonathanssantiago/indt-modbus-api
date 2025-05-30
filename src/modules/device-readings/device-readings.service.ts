@@ -15,22 +15,17 @@ export class DeviceReadingsService {
         return this.deviceReadingsRepository.save(createDeviceReadingDto);
     }
 
-    async findLatestByAddress(address: number): Promise<DeviceReading | null> {
-        return this.deviceReadingsRepository.findOne({
-            where: { address },
+    async findAll(): Promise<DeviceReading[]> {
+        return await this.deviceReadingsRepository.find({
             order: { createdAt: 'DESC' }
         });
     }
 
-    async findHistoryByAddress(address: number): Promise<DeviceReading[]> {
-        return this.deviceReadingsRepository.find({
-            where: { address },
+    async findLatest(): Promise<DeviceReading | null> {
+        const readings = await this.deviceReadingsRepository.find({
             order: { createdAt: 'DESC' },
-            take: 100
+            take: 1
         });
-    }
-
-    async findAll(): Promise<DeviceReading[]> {
-        return this.deviceReadingsRepository.find();
+        return readings.length > 0 ? readings[0] : null;
     }
 }
