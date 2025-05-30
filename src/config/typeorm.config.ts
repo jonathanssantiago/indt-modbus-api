@@ -15,7 +15,14 @@ export const dataSourceOptions: DataSourceOptions = {
   password: configService.get('DB_PASSWORD', 'postgres'),
   database: configService.get('DB_DATABASE', 'modbus_db'),
   entities: [join(__dirname, '..', '**', 'entities', '*.entity.{ts,js}')],
-  migrations: [join(__dirname, '..', 'database', 'migrations', '*.{ts,js}')],
+  migrations: [
+    join(
+      process.env.NODE_ENV === 'production' ? 'dist' : 'src',
+      'database',
+      'migrations',
+      '*.js',
+    ),
+  ],
   synchronize: false,
   logging: configService.get('NODE_ENV', 'development') === 'development',
 };
