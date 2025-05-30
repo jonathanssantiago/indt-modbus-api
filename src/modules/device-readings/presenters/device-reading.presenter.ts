@@ -13,9 +13,9 @@ export class DeviceReadingPresenter {
 
   @ApiProperty({
     enum: DeviceReadingType,
-    description: 'Endereço da leitura: VOLTAGE, CURRENT ou TEMPERATURE',
+    description: 'Tipo da leitura: VOLTAGE, CURRENT ou TEMPERATURE',
   })
-  address: DeviceReadingType;
+  type: DeviceReadingType;
 
   @ApiProperty({
     description: 'The value read from the device',
@@ -31,7 +31,7 @@ export class DeviceReadingPresenter {
 
   constructor(deviceReading: DeviceReading) {
     this.id = deviceReading.id;
-    this.address = deviceReading.address;
+    this.type = deviceReading.type;
     this.value = deviceReading.value;
     this.createdAt = deviceReading.createdAt;
   }

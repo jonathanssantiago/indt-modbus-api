@@ -79,22 +79,16 @@ export class ModbusService implements OnModuleInit, OnModuleDestroy {
           // Salvar leituras no banco de dados
           await Promise.all([
             this.deviceReadingRepository.save({
-              address: this.VOLTAGE_ADDRESS,
+              type: this.VOLTAGE_ADDRESS,
               value: readings.voltage,
-              timestamp,
-              type: 'voltage',
             }),
             this.deviceReadingRepository.save({
-              address: this.CURRENT_ADDRESS,
+              type: this.CURRENT_ADDRESS,
               value: readings.current,
-              createdAt: timestamp,
-              type: 'current',
             }),
             this.deviceReadingRepository.save({
-              address: this.TEMPERATURE_ADDRESS,
+              type: this.TEMPERATURE_ADDRESS,
               value: readings.temperature,
-              createdAt: timestamp,
-              type: 'temperature',
             }),
           ]);
         } catch (error) {

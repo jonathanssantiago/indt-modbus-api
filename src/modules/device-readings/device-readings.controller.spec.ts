@@ -37,7 +37,7 @@ describe('DeviceReadingsController', () => {
     it('should return the latest reading when available', async () => {
       const mockReading: DeviceReading = {
         id: 1,
-        address: DeviceReadingType.VOLTAGE,
+        type: DeviceReadingType.VOLTAGE,
         value: 42,
         createdAt: new Date('2025-05-29T10:00:00'),
       };
@@ -48,7 +48,7 @@ describe('DeviceReadingsController', () => {
 
       expect(result).toBeDefined();
       expect(result.id).toBe(1);
-      expect(result.address).toBe(DeviceReadingType.VOLTAGE);
+      expect(result.type).toBe(DeviceReadingType.VOLTAGE);
       expect(result.value).toBe(42);
       expect(service.findLatest).toHaveBeenCalled();
     });
@@ -68,13 +68,13 @@ describe('DeviceReadingsController', () => {
       const mockReadings: DeviceReading[] = [
         {
           id: 1,
-          address: DeviceReadingType.VOLTAGE,
+          type: DeviceReadingType.VOLTAGE,
           value: 42,
           createdAt: new Date('2025-05-29T10:00:00'),
         },
         {
           id: 2,
-          address: DeviceReadingType.CURRENT,
+          type: DeviceReadingType.CURRENT,
           value: 43,
           createdAt: new Date('2025-05-29T09:00:00'),
         },

@@ -10,13 +10,13 @@ const dataSource = new DataSource({
   password: process.env.DB_PASSWORD || 'postgres',
   database: process.env.DB_DATABASE || 'modbus_db',
   entities: [DeviceReading],
-  synchronize: true,
+  synchronize: false,
 });
 
 async function seed() {
   try {
     await dataSource.initialize();
-    await dataSource.synchronize(true); // apaga o bd
+    // Não vamos apagar o bd porque queremos preservar a estrutura das migrações
     await runSeeders(dataSource, {
       seeds: ['src/database/seeds/*.seed.ts'],
     });
@@ -29,4 +29,4 @@ async function seed() {
   }
 }
 
-seed(); 
+seed();

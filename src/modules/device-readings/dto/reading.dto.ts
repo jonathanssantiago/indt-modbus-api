@@ -14,7 +14,7 @@ export class ReadingDto {
     enum: DeviceReadingType,
     description: 'VOLTAGE, CURRENT ou TEMPERATURE',
   })
-  address: DeviceReadingType;
+  type: DeviceReadingType;
 
   @ApiProperty({
     description: 'Reading value',

@@ -12,7 +12,7 @@ export default class ReadingSeeder implements Seeder {
     // Gerar 10 leituras com dados simulados
     const readings = Array.from({ length: 10 }, (_, index) => {
       const reading = new DeviceReading();
-      reading.address = Object.values(DeviceReadingType)[index % 3];
+      reading.type = Object.values(DeviceReadingType)[index % 3];
       reading.value = Math.random() * 100; // Valor aleatório entre 0 e 100
       return reading;
     });

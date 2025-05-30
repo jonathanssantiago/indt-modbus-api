@@ -31,13 +31,13 @@ export class DeviceReading {
       from: (value: string) => value as DeviceReadingType,
     },
   })
-  address: DeviceReadingType;
+  type: DeviceReadingType;
 
   @ApiProperty()
   @Column('float')
   value: number;
 
   @ApiProperty()
-  @CreateDateColumn()
+  @CreateDateColumn({ name: 'createdAt' })
   createdAt: Date;
 }

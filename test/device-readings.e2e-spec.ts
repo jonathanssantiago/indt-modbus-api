@@ -53,7 +53,7 @@ describe('DeviceReadingsController (e2e)', () => {
 
     it('should return an array of readings', async () => {
       const reading = await repository.save({
-        address: DeviceReadingType.VOLTAGE,
+        type: DeviceReadingType.VOLTAGE,
         value: 23.5,
       });
 
@@ -63,7 +63,7 @@ describe('DeviceReadingsController (e2e)', () => {
         .expect([
           {
             id: reading.id,
-            address: reading.address,
+            type: reading.type,
             value: reading.value,
             createdAt: reading.createdAt.toISOString(),
           },
@@ -81,7 +81,7 @@ describe('DeviceReadingsController (e2e)', () => {
 
     it('should return the latest reading', async () => {
       const reading = await repository.save({
-        address: DeviceReadingType.TEMPERATURE,
+        type: DeviceReadingType.TEMPERATURE,
         value: 99.9,
       });
       return request(app.getHttpServer())
@@ -89,7 +89,7 @@ describe('DeviceReadingsController (e2e)', () => {
         .expect(200)
         .expect({
           id: reading.id,
-          address: reading.address,
+          type: reading.type,
           value: reading.value,
           createdAt: reading.createdAt.toISOString(),
         });
@@ -100,12 +100,12 @@ describe('DeviceReadingsController (e2e)', () => {
     it('should return all readings in history in order of createdAt DESC', async () => {
       const now = new Date();
       const reading2 = await repository.save({
-        address: DeviceReadingType.TEMPERATURE,
+        type: DeviceReadingType.TEMPERATURE,
         value: 20,
         createdAt: now,
       });
       const reading1 = await repository.save({
-        address: DeviceReadingType.CURRENT,
+        type: DeviceReadingType.CURRENT,
         value: 10,
         createdAt: new Date(now.getTime() - 1000),
       });
@@ -116,13 +116,13 @@ describe('DeviceReadingsController (e2e)', () => {
         .expect([
           {
             id: reading2.id,
-            address: reading2.address,
+            type: reading2.type,
             value: reading2.value,
             createdAt: reading2.createdAt.toISOString(),
           },
           {
             id: reading1.id,
-            address: reading1.address,
+            type: reading1.type,
             value: reading1.value,
             createdAt: reading1.createdAt.toISOString(),
           },

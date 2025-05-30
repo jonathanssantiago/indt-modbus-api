@@ -7,7 +7,7 @@ export class CreateDeviceReadingDto {
     enum: DeviceReadingType,
   })
   @IsEnum(DeviceReadingType)
-  address: DeviceReadingType;
+  type: DeviceReadingType;
 
   @ApiProperty({
     description: 'The reading value',

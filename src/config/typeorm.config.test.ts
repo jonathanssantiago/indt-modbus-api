@@ -5,6 +5,6 @@ export const testDataSourceOptions: DataSourceOptions = {
   type: 'sqlite',
   database: ':memory:',
   entities: [DeviceReading],
-  synchronize: true,
+  synchronize: false,
   logging: false,
 };

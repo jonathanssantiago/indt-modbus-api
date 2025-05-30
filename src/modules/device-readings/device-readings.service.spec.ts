@@ -79,13 +79,13 @@ describe('DeviceReadingsService', () => {
       const mockReadings = [
         {
           id: 1,
-          address: DeviceReadingType.VOLTAGE,
+          type: DeviceReadingType.VOLTAGE,
           value: 42,
           createdAt: new Date('2025-05-29T10:00:00'),
         },
         {
           id: 2,
-          address: DeviceReadingType.CURRENT,
+          type: DeviceReadingType.CURRENT,
           value: 43,
           createdAt: new Date('2025-05-29T09:00:00'),
         },
@@ -114,7 +114,7 @@ describe('DeviceReadingsService', () => {
     it('should return the latest reading', async () => {
       const mockReading = {
         id: 1,
-        address: DeviceReadingType.VOLTAGE,
+        type: DeviceReadingType.VOLTAGE,
         value: 42,
         createdAt: new Date('2025-05-29T10:00:00'),
       };
@@ -142,12 +142,12 @@ describe('DeviceReadingsService', () => {
   describe('create', () => {
     it('should create a new reading successfully', async () => {
       const createReadingDto: CreateDeviceReadingDto = {
-        address: DeviceReadingType.VOLTAGE,
+        type: DeviceReadingType.VOLTAGE,
         value: 42,
       };
       const mockReading = {
         id: 1,
-        address: DeviceReadingType.VOLTAGE,
+        type: DeviceReadingType.VOLTAGE,
         value: 42,
         createdAt: new Date('2025-05-29T10:00:00'),
       };
@@ -162,7 +162,7 @@ describe('DeviceReadingsService', () => {
 
     it('should handle errors when creating a reading', async () => {
       const createReadingDto: CreateDeviceReadingDto = {
-        address: DeviceReadingType.CURRENT,
+        type: DeviceReadingType.CURRENT,
         value: 42,
       };
       jest
