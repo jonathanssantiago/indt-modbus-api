@@ -130,10 +130,10 @@ describe('DeviceReadingsController (e2e)', () => {
     });
   });
 
-  describe('/device-readings/status (GET)', () => {
+  describe('/device-readings/modbus-status (GET)', () => {
     it('should return status of modbus connection', async () => {
       const res = await request(app.getHttpServer())
-        .get('/device-readings/status')
+        .get('/device-readings/modbus-status')
         .expect(200);
       expect(res.body).toHaveProperty('status');
       expect(res.body).toHaveProperty('host');

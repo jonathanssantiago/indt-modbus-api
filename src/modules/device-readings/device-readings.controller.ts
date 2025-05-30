@@ -33,7 +33,7 @@ export class DeviceReadingsController {
     return DeviceReadingPresenter.toPresenterArray(readings);
   }
 
-  @Get('status')
+  @Get('modbus-status')
   @ApiOperation({
     summary: 'Obter status da conexão',
     description:
