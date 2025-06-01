@@ -7,7 +7,8 @@ config();
 
 const configService = new ConfigService();
 
-export const dataSourceOptions: DataSourceOptions = {
+// Configuração base
+const baseOptions: DataSourceOptions = {
   type: 'postgres',
   host: configService.get('DB_HOST', 'localhost'),
   port: configService.get('DB_PORT', 5432),
@@ -15,16 +16,26 @@ export const dataSourceOptions: DataSourceOptions = {
   password: configService.get('DB_PASSWORD', 'postgres'),
   database: configService.get('DB_DATABASE', 'modbus_db'),
   entities: [join(__dirname, '..', '**', 'entities', '*.entity.{ts,js}')],
+  synchronize: false,
+  logging: configService.get('NODE_ENV', 'development') === 'development',
+};
+
+// Configuração para CLI (migrações)
+export const dataSourceOptions: DataSourceOptions = {
+  ...baseOptions,
   migrations: [
     join(
       process.env.NODE_ENV === 'production' ? 'dist' : 'src',
       'database',
       'migrations',
-      '*.js',
+      process.env.NODE_ENV === 'production' ? '*.js' : '*.ts',
     ),
   ],
-  synchronize: false,
-  logging: configService.get('NODE_ENV', 'development') === 'development',
+};
+
+// Configuração para aplicação NestJS (sem migrações)
+export const appDataSourceOptions: DataSourceOptions = {
+  ...baseOptions,
 };
 
 const dataSource = new DataSource(dataSourceOptions);
