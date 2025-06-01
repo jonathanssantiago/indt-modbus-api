@@ -75,7 +75,6 @@ npm run help
 
 O projeto usa automaticamente o simulador [jonathanssantiagodev/indt-iot-simulator](https://hub.docker.com/r/jonathanssantiagodev/indt-iot-simulator) que:
 
-- **Simula dispositivos IoT** com registradores Modbus TCP
 - **Inicia automaticamente** com os comandos `npm run dev` e `npm run docker`
 - **Executa na porta 5020** (configurável via MODBUS_PORT)
 - **Remove-se automaticamente** com `npm run clean`

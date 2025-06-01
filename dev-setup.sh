@@ -417,7 +417,7 @@ main() {
             setup_local_database
             run_migrations
             run_seeds
-            success "Setup completo! Use '$0 dev' para iniciar em desenvolvimento."
+            success "Setup completo! Use 'npm run dev' para iniciar em desenvolvimento."
             ;;
         "dev")
             check_requirements
