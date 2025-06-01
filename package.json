@@ -26,7 +26,8 @@
     "setup": "./dev-setup.sh setup",
     "dev": "./dev-setup.sh dev",
     "docker": "./dev-setup.sh docker",
-    "clean": "./dev-setup.sh clean"
+    "clean": "./dev-setup.sh clean",
+    "help": "./dev-setup.sh help"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.3",

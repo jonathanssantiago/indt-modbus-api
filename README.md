@@ -50,42 +50,73 @@ O projeto usa três arquivos de ambiente:
 - `.env.docker` - Produção/Docker
 - `.env.test` - Testes
 
-## 🛠️ Scripts automatizados de configuração e inicialização do projeto
+## 🛠️ Scripts de Desenvolvimento
+
+O projeto inclui scripts automatizados que simplificam o desenvolvimento:
 
 ```bash
-# Setup completo (dependências + banco + migrações)
+# Setup completo (dependências + banco + migrações + seeds)
 npm run setup
 
-# Ambiente de Desenvolvimento com hot-reload
+# Ambiente de desenvolvimento com simulador Modbus integrado
 npm run dev
 
-# Ambiente com Docker
+# Ambiente Docker com simulador Modbus integrado
 npm run docker
 
-# Limpar containers Docker
+# Limpeza completa (containers + volumes + redes)
 npm run clean
+
+# Ajuda com todos os comandos disponíveis
+npm run help
+```
+
+### 🎯 Simulador Modbus Integrado
+
+O projeto usa automaticamente o simulador [jonathanssantiagodev/indt-iot-simulator](https://hub.docker.com/r/jonathanssantiagodev/indt-iot-simulator) que:
+
+- **Simula dispositivos IoT** com registradores Modbus TCP
+- **Inicia automaticamente** com os comandos `npm run dev` e `npm run docker`
+- **Executa na porta 5020** (configurável via MODBUS_PORT)
+- **Remove-se automaticamente** com `npm run clean`
+
+### ⚙️ Configuração do Simulador
+
+```bash
+# Variáveis de ambiente (.env.development / .env.docker)
+MODBUS_HOST=localhost
+MODBUS_PORT=5020
 ```
 
 ## 🏃‍♂️ Executando
 
-### Desenvolvimento
+### Desenvolvimento (com simulador Modbus)
 
 ```bash
+# Inicia PostgreSQL + Simulador Modbus + API com hot-reload
+npm run dev
+
+# Ou manualmente
 npm run start:dev
 ```
 
-### Produção
+### Produção/Docker (com simulador Modbus)
 
 ```bash
-npm run build
-npm run start:prod
-```
+# Inicia PostgreSQL + Simulador Modbus + API via Docker
+npm run docker
 
-### Docker
-
-```bash
+# Ou manualmente
 docker-compose up -d
 ```
+
+### Acesso aos serviços
+
+- **API**: http://localhost:3003
+- **Swagger**: http://localhost:3003/api
+- **WebSocket**: ws://localhost:3003/socket.io
+- **Simulador Modbus**: localhost:5020
+- **PostgreSQL**: localhost:5432
 
 ## 🧪 Testes
 
@@ -98,6 +129,59 @@ npm run test:e2e
 
 # Watch mode
 npm run test:watch
+```
+
+## 🛠️ Comandos Úteis
+
+```bash
+# Ver logs em tempo real
+docker logs -f indt-api
+docker logs -f modbus-simulator
+
+# Reiniciar apenas a API (mantém banco e simulador)
+docker restart indt-api
+
+# Verificar status dos containers
+docker ps
+
+# Limpar tudo e começar do zero
+npm run clean && npm run setup
+
+# Executar migrações manualmente
+npm run migration:run
+
+# Gerar nova migração
+npm run migration:generate -- NomeDaMigracao
+
+# Ver ajuda completa
+npm run help
+```
+
+## 🚨 Troubleshooting
+
+### Problemas comuns
+
+**Erro de conexão com banco:**
+
+```bash
+npm run clean && npm run setup
+```
+
+**Simulador Modbus não conecta:**
+
+```bash
+# Verificar se a porta 5020 está disponível
+netstat -an | grep 5020
+docker restart modbus-simulator
+```
+
+**API não inicia:**
+
+```bash
+# Verificar logs
+docker logs indt-api
+# Reiniciar ambiente
+npm run clean && npm run dev
 ```
 
 ## 📚 API
