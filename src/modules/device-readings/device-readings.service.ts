@@ -37,6 +37,21 @@ export class DeviceReadingsService {
     });
   }
 
+  async findAllPaginated(
+    page: number,
+    limit: number,
+  ): Promise<{ readings: DeviceReading[]; total: number }> {
+    const skip = (page - 1) * limit;
+
+    const [readings, total] = await this.deviceReadingsRepository.findAndCount({
+      skip,
+      take: limit,
+      order: { createdAt: 'DESC' },
+    });
+
+    return { readings, total };
+  }
+
   async findLatest(): Promise<DeviceReading | null> {
     const readings = await this.deviceReadingsRepository.find({
       order: { createdAt: 'DESC' },
