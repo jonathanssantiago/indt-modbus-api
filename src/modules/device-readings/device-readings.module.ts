@@ -9,5 +9,6 @@ import { ConfigModule } from '@nestjs/config';
   imports: [TypeOrmModule.forFeature([DeviceReading]), ConfigModule],
   controllers: [DeviceReadingsController],
   providers: [DeviceReadingsService],
+  exports: [DeviceReadingsService],
 })
 export class DeviceReadingsModule {}

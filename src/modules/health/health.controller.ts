@@ -28,6 +28,9 @@ export class HealthController {
     type: Object,
   })
   async check(): Promise<HealthCheckResult> {
-    return this.health.check([() => this.healthService.checkDatabase()]);
+    return this.health.check([
+      () => this.healthService.checkDatabase(),
+      () => this.healthService.checkModbus(),
+    ]);
   }
 }

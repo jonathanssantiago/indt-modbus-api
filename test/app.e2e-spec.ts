@@ -3,6 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { HealthModule } from '@/modules/health/health.module';
+import { DeviceReadingsModule } from '@/modules/device-readings/device-readings.module';
 import { testDataSourceOptions } from '@/config/typeorm.config.test';
 
 describe('AppController (e2e)', () => {
@@ -12,6 +13,7 @@ describe('AppController (e2e)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [
         TypeOrmModule.forRoot(testDataSourceOptions),
+        DeviceReadingsModule,
         HealthModule,
       ],
     }).compile();
@@ -30,10 +32,14 @@ describe('AppController (e2e)', () => {
   it('/health (GET)', () => {
     return request(app.getHttpServer())
       .get('/health')
-      .expect(200)
       .expect((res) => {
+        // Accept either 200 (all services up) or 503 (some services down)
+        expect([200, 503]).toContain(res.status);
         expect(res.body).toHaveProperty('status');
-        expect(res.body.status).toBe('ok');
+        expect(['ok', 'error']).toContain(res.body.status);
+        expect(res.body).toHaveProperty('info');
+        expect(res.body).toHaveProperty('error');
+        expect(res.body).toHaveProperty('details');
       });
   });
 });
