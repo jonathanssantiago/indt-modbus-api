@@ -288,7 +288,7 @@ start_dev() {
     fi
     
     success "Aplicação iniciando na porta 3003..."
-    success "Swagger disponível em: http://localhost:3003/api"
+    success "Swagger disponível em: http://localhost:3003/api/docs"
     success "Health check disponível em: http://localhost:3003/health"
     
     npm run start:dev

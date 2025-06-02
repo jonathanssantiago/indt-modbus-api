@@ -112,7 +112,7 @@ docker-compose up -d
 ### Acesso aos serviços
 
 - **API**: http://localhost:3003
-- **Swagger**: http://localhost:3003/api
+- **Swagger**: http://localhost:3003/api/docs
 - **WebSocket**: ws://localhost:3003/socket.io
 - **Simulador Modbus**: localhost:5020
 - **PostgreSQL**: localhost:5432
@@ -199,7 +199,7 @@ npm run clean && npm run dev
 
 ### Documentação
 
-- Swagger: http://localhost:3003/api
+- Swagger: http://localhost:3003/api/docs
 
 ### WebSocket
 
