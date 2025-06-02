@@ -46,6 +46,7 @@ describe('DeviceReadingsService', () => {
           useValue: {
             find: jest.fn(),
             findOne: jest.fn(),
+            findAndCount: jest.fn(),
             save: jest.fn(),
             create: jest.fn(),
             createQueryBuilder: jest.fn(),
@@ -107,6 +108,84 @@ describe('DeviceReadingsService', () => {
 
       expect(result).toEqual([]);
       expect(repository.find).toHaveBeenCalled();
+    });
+  });
+
+  describe('findAllPaginated', () => {
+    it('should return paginated readings with correct pagination info', async () => {
+      const mockReadings = [
+        {
+          id: 1,
+          type: DeviceReadingType.VOLTAGE,
+          value: 42,
+          createdAt: new Date('2025-05-29T10:00:00'),
+        },
+        {
+          id: 2,
+          type: DeviceReadingType.CURRENT,
+          value: 43,
+          createdAt: new Date('2025-05-29T09:00:00'),
+        },
+      ];
+
+      jest
+        .spyOn(repository, 'findAndCount')
+        .mockResolvedValue([mockReadings, 15]);
+
+      const result = await service.findAllPaginated(2, 5);
+
+      expect(result).toEqual({
+        readings: mockReadings,
+        total: 15,
+      });
+      expect(repository.findAndCount).toHaveBeenCalledWith({
+        skip: 5, // (page 2 - 1) * limit 5 = 5
+        take: 5,
+        order: { createdAt: 'DESC' },
+      });
+    });
+
+    it('should return empty paginated result when no readings exist', async () => {
+      jest.spyOn(repository, 'findAndCount').mockResolvedValue([[], 0]);
+
+      const result = await service.findAllPaginated(1, 10);
+
+      expect(result).toEqual({
+        readings: [],
+        total: 0,
+      });
+      expect(repository.findAndCount).toHaveBeenCalledWith({
+        skip: 0,
+        take: 10,
+        order: { createdAt: 'DESC' },
+      });
+    });
+
+    it('should handle first page pagination correctly', async () => {
+      const mockReadings = [
+        {
+          id: 1,
+          type: DeviceReadingType.VOLTAGE,
+          value: 42,
+          createdAt: new Date('2025-05-29T10:00:00'),
+        },
+      ];
+
+      jest
+        .spyOn(repository, 'findAndCount')
+        .mockResolvedValue([mockReadings, 25]);
+
+      const result = await service.findAllPaginated(1, 10);
+
+      expect(result).toEqual({
+        readings: mockReadings,
+        total: 25,
+      });
+      expect(repository.findAndCount).toHaveBeenCalledWith({
+        skip: 0, // (page 1 - 1) * limit 10 = 0
+        take: 10,
+        order: { createdAt: 'DESC' },
+      });
     });
   });
 

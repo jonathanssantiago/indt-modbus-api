@@ -18,6 +18,7 @@ describe('DeviceReadingsController', () => {
           provide: DeviceReadingsService,
           useValue: {
             findAll: jest.fn(),
+            findAllPaginated: jest.fn(),
             findLatest: jest.fn(),
             statusModbusService: jest.fn(),
           },
@@ -64,7 +65,7 @@ describe('DeviceReadingsController', () => {
   });
 
   describe('getHistory', () => {
-    it('should return array of readings', async () => {
+    it('should return paginated readings with default parameters', async () => {
       const mockReadings: DeviceReading[] = [
         {
           id: 1,
@@ -80,23 +81,97 @@ describe('DeviceReadingsController', () => {
         },
       ];
 
-      jest.spyOn(service, 'findAll').mockResolvedValue(mockReadings);
+      jest.spyOn(service, 'findAllPaginated').mockResolvedValue({
+        readings: mockReadings,
+        total: 15,
+      });
 
       const result = await controller.getHistory();
 
-      expect(result).toHaveLength(2);
-      expect(result[0].id).toBe(1);
-      expect(result[1].id).toBe(2);
-      expect(service.findAll).toHaveBeenCalled();
+      expect(result).toEqual({
+        data: expect.arrayContaining([
+          expect.objectContaining({ id: 1 }),
+          expect.objectContaining({ id: 2 }),
+        ]),
+        meta: {
+          total: 15,
+          page: 1,
+          limit: 10,
+          totalPages: 2,
+        },
+      });
+      expect(service.findAllPaginated).toHaveBeenCalledWith(1, 10);
     });
 
-    it('should return empty array when no readings exist', async () => {
-      jest.spyOn(service, 'findAll').mockResolvedValue([]);
+    it('should return paginated readings with custom parameters', async () => {
+      const mockReadings: DeviceReading[] = [
+        {
+          id: 3,
+          type: DeviceReadingType.VOLTAGE,
+          value: 50,
+          createdAt: new Date('2025-05-29T10:00:00'),
+        },
+      ];
+
+      jest.spyOn(service, 'findAllPaginated').mockResolvedValue({
+        readings: mockReadings,
+        total: 25,
+      });
+
+      const result = await controller.getHistory('2', '5');
+
+      expect(result).toEqual({
+        data: expect.arrayContaining([expect.objectContaining({ id: 3 })]),
+        meta: {
+          total: 25,
+          page: 2,
+          limit: 5,
+          totalPages: 5,
+        },
+      });
+      expect(service.findAllPaginated).toHaveBeenCalledWith(2, 5);
+    });
+
+    it('should handle invalid page and limit parameters', async () => {
+      const mockReadings: DeviceReading[] = [];
+
+      jest.spyOn(service, 'findAllPaginated').mockResolvedValue({
+        readings: mockReadings,
+        total: 0,
+      });
+
+      const result = await controller.getHistory('0', '200');
+
+      expect(result).toEqual({
+        data: [],
+        meta: {
+          total: 0,
+          page: 1, // Should be corrected to minimum 1
+          limit: 100, // Should be corrected to maximum 100
+          totalPages: 0,
+        },
+      });
+      expect(service.findAllPaginated).toHaveBeenCalledWith(1, 100);
+    });
+
+    it('should return empty paginated result when no readings exist', async () => {
+      jest.spyOn(service, 'findAllPaginated').mockResolvedValue({
+        readings: [],
+        total: 0,
+      });
 
       const result = await controller.getHistory();
 
-      expect(result).toHaveLength(0);
-      expect(service.findAll).toHaveBeenCalled();
+      expect(result).toEqual({
+        data: [],
+        meta: {
+          total: 0,
+          page: 1,
+          limit: 10,
+          totalPages: 0,
+        },
+      });
+      expect(service.findAllPaginated).toHaveBeenCalledWith(1, 10);
     });
   });
 
