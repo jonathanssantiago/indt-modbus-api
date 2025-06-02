@@ -2,6 +2,8 @@
 
 API para comunicação Modbus e leitura de dispositivos IoT desenvolvida com NestJS.
 
+![swagger](./swagger.png)
+
 ## 📋 Descrição
 
 Aplicação para comunicação com dispositivos IoT via protocolo Modbus TCP que oferece:
